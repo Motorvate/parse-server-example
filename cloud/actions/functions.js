@@ -4,6 +4,8 @@ Parse.Cloud.define('hello', function(req, res) {
 });
 
 Parse.Cloud.define('createEventComment', function(req, res) {
+	console.log("user comment 1: " + req.params.comment);
+
 	var queryPromises = [];
 	var stringPromise = Parse.Promise.as(req.params.comment);
 	queryPromises.push(stringPromise);
@@ -24,6 +26,8 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	}
 
 	Parse.Promise.when(queryPromises).then(function(results) {
+	console.log("user comment 2: " + results[0]);
+
 		var EventComment = Parse.Object.extend("EventComment");
 		var newComment = new EventComment();
 		newComment.comment = results[0];
