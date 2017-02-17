@@ -39,22 +39,21 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 		res.error(errors);
 	}).then(function(savedComment) {
 		outerComment = savedComment;
-
-		var event = savedComment.get("event");
-		event.fetch({
-			success: function(event) {
-				// channels: [savedComment.event.objectId],
-				// where: {},
-				return Parse.Push.send({
-					channels: [event.id],
-						data: { alert: "The Giants won against the Mets 2-3." }
-					}, { useMasterKey: true }
-				);
-  			}
-		});
+		return savedComment.get("event").fetch();
 	}, function(saveError) {
 		res.error(saveError);
-	}).then(function(){
+	}).then(function(event){
+		// channels: [savedComment.event.objectId],
+		// where: {},
+		return Parse.Push.send({
+						channels: [event.id],
+						data: { alert: "The Giants won against the Mets 2-3." }
+					}, { useMasterKey: true }
+		);
+	}, function(error){
+			res.error(error);
+	})
+	.then(function(){
 		res.success(outerComment);
 	}, function(pushError){
 		res.error(pushError);
