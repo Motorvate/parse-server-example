@@ -40,9 +40,9 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	}).then(function(savedComment) {
 		outerComment = savedComment;
 
-		// outerEvent.objectId
+		// channels: [outerEvent.objectId],
 		return Parse.Push.send({
-			channels: [],
+			where: {},
 			data: { alert: "The Giants won against the Mets 2-3." }
 			}, { useMasterKey: true }
 		);
