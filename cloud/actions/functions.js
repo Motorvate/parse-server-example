@@ -24,8 +24,6 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 
 	var outerComment = null;
 	Parse.Promise.when(queryPromises).then(function(results) {
-		outerEvent = results[0];
-
 		var EventComment = Parse.Object.extend("EventComment");
 		var newComment = new EventComment();
 		newComment.set("comment", commentString);
