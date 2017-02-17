@@ -48,7 +48,7 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	}, function(saveError) {
 		res.error(saveError);
 	}).then(function(){
-		res.success({id: outerComment.event.objectId});
+		res.success(outerComment);
 	}, function(pushError){
 		res.error(pushError);
 	});
