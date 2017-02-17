@@ -40,52 +40,8 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	}, function(errors) {
 		res.error(errors);
 	}).then(function(savedComment) {
-		// update installation to receive push notification
-		var author = savedComment.author;
-		var installationQuery = new Parse.Query(Parse.Installation);
-		installationQuery.equalTo("userID", outerAuthor.objectId);
-		return installationQuery.find();
-
-		/*
-		var successFunc = function(installations) {
-			var savePromises = [];
-			var count;
-            for(count = 0; count < installations.length; count++) {
-            	var installation = installations[count];
-            	var channels = installation.channels;
-            	if (channels == null) {
-            		channels = [];
-            	}
-            	if (channels.indexOf(savedComment.event.objectId) == -1) {
-					channels.push(savedComment.event.objectId);
-					installation.channels = channels;
-					savePromises.push(installation.save());
-            	}
-            }
-
-			if (savePromises.length > 0) {
-				Parse.Promise.when(savePromises).then(function(savedInstallations) {
-					res.success(savedComment);
-				}, function(error) {
-					res.error({error: "2"});
-					//res.error(error);
-				});
-			} else {
-				res.success(savedComment);
-			}
-		};
-		var errorFunc = function(queryError) {
-			res.error({error: "3"});
-			//res.error(queryError);
-		};
-		return installationQuery.find({success: successFunc, error: errorFunc});
-		*/
+		res.success(savedComment);
 	}, function(saveError) {
 		res.error(saveError);
-	}).then(function(installations){
-		res.success(installations);
-		//res.success(savedComment);
-	}, function(error){
-		res.error(error);
 	});
 });
