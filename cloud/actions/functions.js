@@ -41,15 +41,17 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 		outerComment = savedComment;
 
 		// channels: [outerEvent.objectId],
+		// where: {},
 		return Parse.Push.send({
-			where: {},
+			channels: [outerEvent.objectId],
 			data: { alert: "The Giants won against the Mets 2-3." }
 			}, { useMasterKey: true }
 		);
 	}, function(saveError) {
 		res.error(saveError);
 	}).then(function(){
-		res.success(outerComment);
+		res.success(outerEvent.objectId);
+		//res.success(outerComment);
 	}, function(pushError){
 		res.error(pushError);
 	});
