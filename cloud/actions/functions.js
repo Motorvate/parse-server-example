@@ -40,13 +40,23 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	}).then(function(savedComment) {
 		outerComment = savedComment;
 
-		// channels: [outerEvent.objectId],
-		// where: {},
+		console.log(outerEventId);
+		var query = new Parse.Query(Parse.Installation);
+		query.containsAll('channels', [outerEventId]);
 		return Parse.Push.send({
-			channels: [outerEventId],
+			where: query,
 			data: { alert: "The Giants won against the Mets 2-3." }
 			}, { useMasterKey: true }
 		);
+
+
+		// channels: [outerEvent.objectId],
+		// where: {},
+// 		return Parse.Push.send({
+// 			channels: [outerEventId],
+// 			data: { alert: "The Giants won against the Mets 2-3." }
+// 			}, { useMasterKey: true }
+// 		);
 	}, function(saveError) {
 		res.error(saveError);
 	}).then(function(){
