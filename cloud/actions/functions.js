@@ -41,8 +41,10 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 		res.error(errors);
 	}).then(function(savedComment) {
 		// update installation to receive push notification
+		res.success(savedComment.author);
+
 		var author = savedComment.author;
-		var installationQuery = new Parse.Query("Installation");
+		var installationQuery = new Parse.Query("_Installation");
 		return installationQuery.find();
 
 		/*
