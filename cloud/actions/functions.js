@@ -32,11 +32,44 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 			newComment.set("parentComment", results[2]);
 		}
 		return newComment.save();
-	}, function(errors){
+	}, function(errors) {
 		res.error(errors);
-	}).then(function(saveResult){
-		res.success(saveResult);
-	}, function(saveError){
+	}).then(function(savedComment) {
+		// update installation to receive push notification
+		var attendee = savedComment.attendee;
+		var query = new Parse.Query("Installation");
+		query.equalTo("userID", attendee.objectId);
+		var success = function(installations) {
+			var savePromises = [];
+			var count;
+            for(count = 0; count < installations.length; count++) {
+            	var installation = installations[count];
+            	var channels = installation.channels;
+            	if (channels == null) {
+            		channels = [];
+            	}
+            	if (channels.indexOf(savedComment.event.objectId) == -1) {
+					channels.push(savedComment.event.objectId);
+					installation.channels = channels;
+					savePromises.push(installation.save());
+            	}
+            }
+
+			if (savePromises.length > 0) {
+				Parse.Promise.when(savePromises).then(function(savedInstallations) {
+					res.success(savedComment);
+				}, function(error) {
+					res.error(error);
+				});
+			} else {
+				res.success(savedComment);
+			}
+		};
+		var error = function(queryError) {
+			res.error(queryError);
+		};
+		query.find({success: success, error: error});
+	}, function(saveError) {
 		res.error(saveError);
 	});
 });
