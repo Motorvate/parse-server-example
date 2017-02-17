@@ -46,7 +46,7 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 				// channels: [savedComment.event.objectId],
 				// where: {},
 				return Parse.Push.send({
-					channels: [savedComment.id],
+					channels: [event.id],
 						data: { alert: "The Giants won against the Mets 2-3." }
 					}, { useMasterKey: true }
 				);
