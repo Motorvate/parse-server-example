@@ -42,7 +42,8 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 			data: { alert: "The Giants won against the Mets 2-3." }
 			}, {
 			success: function() { res.success(savedComment); },
-			error: function(error) { res.error(error); }
+			error: function(error) { res.error(error); },
+			useMasterKey: true
 		});
 	}, function(saveError) {
 		res.error(saveError);
