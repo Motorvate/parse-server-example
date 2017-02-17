@@ -43,11 +43,10 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	}, function(saveError) {
 		res.error(saveError);
 	}).then(function(event){
-		// channels: [savedComment.event.objectId],
 		// where: {},
 		return Parse.Push.send({
 						channels: [event.id],
-						data: { alert: "The Giants won against the Mets 2-3." }
+						data: { alert: "A new comment from a RSVPed event: " + event.get("name") }
 					}, { useMasterKey: true }
 		);
 	}, function(error){
