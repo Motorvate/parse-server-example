@@ -22,10 +22,10 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 		queryPromises.push(commentPromise);		
 	}
 
-	var outerEvent = null;
+	var outerEventId = null;
 	var outerComment = null;
 	Parse.Promise.when(queryPromises).then(function(results) {
-		outerEvent = results[0];
+		outerEventId = results[0].objectId;
 		var EventComment = Parse.Object.extend("EventComment");
 		var newComment = new EventComment();
 		newComment.set("comment", commentString);
@@ -43,15 +43,14 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 		// channels: [outerEvent.objectId],
 		// where: {},
 		return Parse.Push.send({
-			channels: [savedComment.event.objectId],
+			channels: [outerEventId],
 			data: { alert: "The Giants won against the Mets 2-3." }
 			}, { useMasterKey: true }
 		);
 	}, function(saveError) {
 		res.error(saveError);
 	}).then(function(){
-		res.success(outerEvent.objectId);
-		//res.success(outerComment);
+		res.success(outerComment);
 	}, function(pushError){
 		res.error(pushError);
 	});
