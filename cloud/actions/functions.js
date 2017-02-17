@@ -36,7 +36,7 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 		if (results.length == 3) {
 			newComment.set("parentComment", results[2]);
 		}
-		return newComment.save();
+		return newComment.save().as(newComment);
 	}, function(errors) {
 		res.error(errors);
 	}).then(function(savedComment) {
