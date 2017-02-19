@@ -51,7 +51,7 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 		}
 		eventIDsWatching.push(outerEvent.id);
 		outerAuthor.set("eventIDsWatching", eventIDsWatching);
-		promises.push(outerAuthor.save());
+		promises.push(outerAuthor.save(null, { useMasterKey: true }));
 
 		// where: {},
 		var pushPromise = Parse.Push.send({
