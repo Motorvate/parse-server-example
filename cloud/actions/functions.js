@@ -43,15 +43,27 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 		res.error(queryError);
 	}).then(function(savedComment){
 		outerComment = savedComment;
+		var promises = [];
+
+		var eventIDsWatching = outerAuthor.get("eventIDsWatching");
+		if (eventIDsWatching == null) {
+			eventIDsWatching = [];
+		}
+		eventIDsWatching.push(outerEvent.id);
+		outerAuthor.set("eventIDsWatching", eventIDsWatching);
+		promises.push(outerAuthor.save());
+
 		// where: {},
-		return Parse.Push.send({
-						channels: [outerEvent.id],
-						data: { alert: "A new comment from a RSVPed event: " + outerEvent.get("name") }
-					}, { useMasterKey: true }
+		var pushPromise = Parse.Push.send({
+							channels: [outerEvent.id], 
+							data: { alert: "A new comment from a RSVPed event: " + outerEvent.get("name") }
+							}, { useMasterKey: true }
 		);
+		promises.push(pushPromise);
+		return Parse.Promise.when(promises);
 	}, function(saveError){
 		res.error(saveError);
-	}).then(function(){
+	}).then(function(saveAndPushResult){
 		res.success(outerComment);
 	}, function(pushError){
 		res.error(pushError);
