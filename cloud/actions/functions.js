@@ -107,4 +107,4 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 	}, function(pushError){
 		res.error(pushError);
 	});
-}
+});
