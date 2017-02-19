@@ -23,7 +23,10 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	}
 
 	var outerComment = null;
+	var outerEvent = null;
 	Parse.Promise.when(queryPromises).then(function(results) {
+		outerEvent = results[0];
+
 		var EventComment = Parse.Object.extend("EventComment");
 		var newComment = new EventComment();
 		newComment.set("comment", commentString);
@@ -32,6 +35,7 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 		if (results.length == 3) {
 			newComment.set("parentComment", results[2]);
 		}
+
 		return newComment.save();
 	}, function(queryError) {
 		res.error(queryError);
@@ -43,8 +47,8 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	}).then(function(event){
 		// where: {},
 		return Parse.Push.send({
-						channels: [event.id],
-						data: { alert: "A new comment from a RSVPed event: " + event.get("name") }
+						channels: [outerEvent.id],
+						data: { alert: "A new comment from a RSVPed event: " + outerEvent.get("name") }
 					}, { useMasterKey: true }
 		);
 	}, function(eventFetchError){
