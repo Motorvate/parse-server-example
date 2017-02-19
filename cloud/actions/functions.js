@@ -49,9 +49,11 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 		if (eventIDsWatching == null) {
 			eventIDsWatching = [];
 		}
-		eventIDsWatching.push(outerEvent.id);
-		outerAuthor.set("eventIDsWatching", eventIDsWatching);
-		promises.push(outerAuthor.save(null, { useMasterKey: true }));
+		if (eventIDsWatching.indexOf(outerEvent.id) == -1) {
+			eventIDsWatching.push(outerEvent.id);
+			outerAuthor.set("eventIDsWatching", eventIDsWatching);
+			promises.push(outerAuthor.save(null, { useMasterKey: true }));
+		}
 
 		// where: {},
 		var pushPromise = Parse.Push.send({
@@ -89,11 +91,16 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 	}
 
 	var outerReview = null;
+	var outerShop = null;
+	var outerAuthor = null;
 	Parse.Promise.when(queryPromises).then(function(results){
+		outerShop = results[0];
+		outerAuthor = results[1];
+
 		var ShopReview = Parse.Object.extend("ShopReview");
 		var newReview = new ShopReview();
-		newReview.set("shop", results[0]);
-		newReview.set("author", results[1]);
+		newReview.set("shop", outerShop);
+		newReview.set("author", outerAuthor);
 		newReview.set("review", req.params.review);
 		newReview.set("reviewScore", req.params.score);
 		if (parentReviewID != null) {
@@ -104,18 +111,26 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		res.error(queryError);
 	}).then(function(savedReview){
 		outerReview = savedReview;
-		return savedReview.get("shop").fetch();
-	}, function(saveError){
-		res.error(saveError);
-	}).then(function(shop){
-		var notificationMessage = "A new review of your favorite shop: " + shop.get("name")
+		var promises = [];
+
+		var shopIDsWatching = outerAuthor.get("shopIDsWatching");
+		if (shopIDsWatching == null) {
+			shopIDsWatching = [];
+		}
+		if (shopIDsWatching.indexOf(outerShop.id) == -1) {
+			shopIDsWatching.push(outerShop.id);
+			outerAuthor.set("shopIDsWatching", shopIDsWatching);
+			promises.push(outerAuthor.save(null, { useMasterKey: true }));
+		}
+
+		var notificationMessage = "A new review of your favorite shop: " + outerShop.get("name")
 		return Parse.Push.send({
-						channels: [shop.id],
+						channels: [outerShop.id],
 						data: { alert: notificationMessage }
 					}, { useMasterKey: true }
 		);
-	}, function(fetchShopError){
-		res.error(fetchShopError);
+	}, function(saveError){
+		res.error(saveError);
 	}).then(function(){
 		res.success(outerReview);
 	}, function(pushError){
