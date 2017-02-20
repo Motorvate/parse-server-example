@@ -18,9 +18,9 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	var userPromise = userQuery.get(req.params.authorID);
 	queryPromises.push(userPromise);
 
-// 	var installationQuery = new Parse.Query("Installation");
-// 	var installationPromise = installationQuery.get(req.params.installationID, { useMasterKey: true });
-// 	queryPromises.push(installationPromise);
+	var installationQuery = new Parse.Query("Installation");
+	var installationPromise = installationQuery.get(req.params.installationID, { useMasterKey: true });
+	queryPromises.push(installationPromise);
 
 	var parentCommentID = req.params.parentCommentID;
 	if (parentCommentID != null) {
@@ -35,16 +35,16 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	Parse.Promise.when(queryPromises).then(function(searchResults) {
 		outerEvent = searchResults[0];
 		outerAuthor = searchResults[1];
-// 		var installation = searchResults[2];
+ 		var installation = searchResults[2];
 
 		var savePromises = [];
-// 		var channels = installation.channels;
-// 		if (channels == null) {
-// 			channels = [];
-// 		}
-// 		channels.push(outerEvent.id);
-// 		installation.channels = channels;
-// 		savePromises.push(installation.save(null, { useMasterKey: true }));
+		var channels = installation.channels;
+		if (channels == null) {
+			channels = [];
+		}
+		channels.push(outerEvent.id);
+		installation.channels = channels;
+		savePromises.push(installation.save(null, { useMasterKey: true }));
 
 		var EventComment = Parse.Object.extend("EventComment");
 		var newComment = new EventComment();
