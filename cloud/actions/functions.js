@@ -18,7 +18,7 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	var userPromise = userQuery.get(req.params.authorID);
 	queryPromises.push(userPromise);
 
-	var installationQuery = new Parse.Query("Installation");
+	var installationQuery = new Parse.Query("_Installation");
 	var installationPromise = installationQuery.get(req.params.installationID, { useMasterKey: true });
 	queryPromises.push(installationPromise);
 
@@ -58,7 +58,7 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 
 		return Parse.Promise.when(savePromises);
 	}, function(queryError){
-		res.error({error: queryError, idString: req.params.installationID});
+		res.error(queryError);
 	}).then(function(saveResults){
 		outerComment = saveResults[0];
 		var promises = [];
