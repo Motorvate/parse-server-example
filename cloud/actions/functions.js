@@ -58,7 +58,7 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 
 		return Parse.Promise.when(savePromises);
 	}, function(queryError){
-		res.error(queryError);
+		res.error({error: queryError, idString: req.params.installationID});
 	}).then(function(saveResults){
 		outerComment = saveResults[0];
 		var promises = [];
