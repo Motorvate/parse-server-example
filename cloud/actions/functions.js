@@ -37,9 +37,9 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 		outerAuthor = searchResults[1];
 		var savePromises = [];
 
-		var installationPromise = Utility.updateChannelInInstallation(searchResults[2], outerEvent.id);
-		if (installationPromise != null) {
-			savePromises.push(installationPromise);
+		var channelPromise = Utility.updateChannelInInstallation(searchResults[2], outerEvent.id);
+		if (channelPromise != null) {
+			savePromises.push(channelPromise);
 		}
 
 		var EventComment = Parse.Object.extend("EventComment");
@@ -97,6 +97,10 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 	var userPromise = userQuery.get(req.params.authorID);
 	queryPromises.push(userPromise);
 
+	var installationQuery = new Parse.Query("_Installation");
+	var installationPromise = installationQuery.get(req.params.installationID, { useMasterKey: true });
+	queryPromises.push(installationPromise);
+
 	var parentReviewID = req.params.parentReviewID;
 	if (parentReviewID != null) {
 		var parentReviewQuery = new Parse.Query("ShopReview");
@@ -107,9 +111,15 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 	var outerReview = null;
 	var outerShop = null;
 	var outerAuthor = null;
-	Parse.Promise.when(queryPromises).then(function(results){
-		outerShop = results[0];
-		outerAuthor = results[1];
+	Parse.Promise.when(queryPromises).then(function(searchResults){
+		outerShop = searchResults[0];
+		outerAuthor = searchResults[1];
+
+		var savePromises = [];
+		var channelPromise = Utility.updateChannelInInstallation(searchResults[2], outerShop.id);
+		if (channelPromise != null) {
+			savePromises.push(channelPromise);
+		}
 
 		var ShopReview = Parse.Object.extend("ShopReview");
 		var newReview = new ShopReview();
@@ -118,13 +128,15 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		newReview.set("review", req.params.review);
 		newReview.set("reviewScore", req.params.score);
 		if (parentReviewID != null) {
-			newReview.set("parentReview", results[2]);
+			newReview.set("parentReview", searchResults[3]);
 		}
-		return newReview.save();
+		savePromises.push(newReview.save());
+
+		return Parse.Promise.when(savePromises);
 	}, function(queryError){
 		res.error(queryError);
-	}).then(function(savedReview){
-		outerReview = savedReview;
+	}).then(function(saveResults){
+		outerReview = saveResults[1];
 		var promises = [];
 
 		var shopIDsWatching = outerAuthor.get("shopIDsWatching");
