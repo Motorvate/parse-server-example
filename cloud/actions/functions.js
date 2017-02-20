@@ -36,14 +36,14 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 		outerEvent = searchResults[0];
 		outerAuthor = searchResults[1];
  		var installation = searchResults[2];
-
 		var savePromises = [];
-		var channels = installation.channels;
+
+		var channels = installation.get("channels");
 		if (channels == null) {
 			channels = [];
 		}
 		channels.push(outerEvent.id);
-		installation.channels = channels;
+		installation.set("channels", channels);
 		savePromises.push(installation.save(null, { useMasterKey: true }));
 
 		var EventComment = Parse.Object.extend("EventComment");
@@ -60,7 +60,7 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	}, function(queryError){
 		res.error(queryError);
 	}).then(function(saveResults){
-		outerComment = saveResults[0];
+		outerComment = saveResults[1];
 		var promises = [];
 
 		var eventIDsWatching = outerAuthor.get("eventIDsWatching");
