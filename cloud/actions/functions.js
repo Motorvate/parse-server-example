@@ -42,9 +42,11 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 		if (channels == null) {
 			channels = [];
 		}
-		channels.push(outerEvent.id);
-		installation.set("channels", channels);
-		savePromises.push(installation.save(null, { useMasterKey: true }));
+		if (channels.indexOf(outerEvent.id) == -1) {
+			channels.push(outerEvent.id);
+			installation.set("channels", channels);
+			savePromises.push(installation.save(null, { useMasterKey: true }));
+		}
 
 		var EventComment = Parse.Object.extend("EventComment");
 		var newComment = new EventComment();
