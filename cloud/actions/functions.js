@@ -35,17 +35,11 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	Parse.Promise.when(queryPromises).then(function(searchResults) {
 		outerEvent = searchResults[0];
 		outerAuthor = searchResults[1];
- 		var installation = searchResults[2];
 		var savePromises = [];
 
-		var channels = installation.get("channels");
-		if (channels == null) {
-			channels = [];
-		}
-		if (channels.indexOf(outerEvent.id) == -1) {
-			channels.push(outerEvent.id);
-			installation.set("channels", channels);
-			savePromises.push(installation.save(null, { useMasterKey: true }));
+		var installationPromise = Utility.updateChannelInInstallation(searchResults[2], outerEvent.id);
+		if (installationPromise != null) {
+			savePromises.push(installationPromise);
 		}
 
 		var EventComment = Parse.Object.extend("EventComment");
@@ -157,3 +151,19 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		res.error(pushError);
 	});
 });
+
+class Utility {
+	static updateChannelInInstallation(installation, channel) {
+		var channels = installation.get("channels");
+		if (channels == null) {
+			channels = [];
+		}
+		if (channels.indexOf(channel) == -1) {
+			channels.push(channel);
+			installation.set("channels", channels);
+			return installation.save(null, { useMasterKey: true });
+		} else {
+			return null;
+		}
+	}
+}
