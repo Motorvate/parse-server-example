@@ -215,7 +215,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 
 
 class Utility {
-	static updateChannelInInstallation(installation, channel) {
+	static updateChannelInInstallation(installation, channel){
 		var channels = installation.get("channels");
 		if (channels == null) {
 			channels = [];
@@ -229,6 +229,7 @@ class Utility {
 		}
 	}
 
+/*
 	static addShopToUserWatchingListIfNecessary(user, shop){
 		var shopIDsWatching = user.get("shopIDsWatching");
 		if (shopIDsWatching == null) {
@@ -242,4 +243,5 @@ class Utility {
 			reuturn null;
 		}
 	}
+	*/
 }
