@@ -215,7 +215,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 
 
 class Utility {
-	static updateChannelInInstallation(installation, channel){
+	static updateChannelInInstallation(installation, channel) {
 		var channels = installation.get("channels");
 		if (channels == null) {
 			channels = [];
@@ -229,8 +229,7 @@ class Utility {
 		}
 	}
 
-	static addShopToUserWatchingList(user, shop){
-	/*
+	static addShopToUserWatchingList(user, shop) {
 		var shopIDsWatching = user.get("shopIDsWatching");
 		if (shopIDsWatching == null) {
 			shopIDsWatching = [];
@@ -240,8 +239,7 @@ class Utility {
 			user.set("shopIDsWatching", shopIDsWatching);
 			return user.save(null, { useMasterKey: true });
 		} else {
-			reuturn null;
+			return null;
 		}
-	*/
 	}
 }
