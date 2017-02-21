@@ -3,8 +3,10 @@ Parse.Cloud.define('hello', function(req, res) {
   res.success('Hi');
 });
 
+
 Parse.Cloud.define('rsvpEvent', function(req, res) {
 });
+
 
 Parse.Cloud.define('createEventComment', function(req, res) {
 	var commentString = req.params.comment;
@@ -86,6 +88,7 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	});
 });
 
+
 Parse.Cloud.define('addShopToFavorite', function(req, res) {
 	var queryPromises = [];
 
@@ -135,6 +138,7 @@ Parse.Cloud.define('addShopToFavorite', function(req, res) {
 		res.error(saveError);
 	});
 });
+
 
 Parse.Cloud.define('createShopReview', function(req, res) {
 	var queryPromises = [];
@@ -209,6 +213,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 	});
 });
 
+
 class Utility {
 	static updateChannelInInstallation(installation, channel) {
 		var channels = installation.get("channels");
@@ -224,7 +229,7 @@ class Utility {
 		}
 	}
 
-	static addShopToUserWatchingListIfNecessary(user, shop) {
+	static addShopToUserWatchingListIfNecessary(user, shop){
 		var shopIDsWatching = user.get("shopIDsWatching");
 		if (shopIDsWatching == null) {
 			shopIDsWatching = [];
@@ -232,7 +237,7 @@ class Utility {
 		if (shopIDsWatching.indexOf(shop.id) == -1) {
 			shopIDsWatching.push(shop.id);
 			user.set("shopIDsWatching", shopIDsWatching);
-			return user.save(null, { useMasterKey: true }));
+			return user.save(null, { useMasterKey: true });
 		} else {
 			reuturn null;
 		}
