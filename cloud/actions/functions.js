@@ -88,7 +88,7 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	});
 });
 
-/*
+
 Parse.Cloud.define('addShopToFavorite', function(req, res) {
 	var queryPromises = [];
 
@@ -138,7 +138,6 @@ Parse.Cloud.define('addShopToFavorite', function(req, res) {
 		res.error(saveError);
 	});
 });
-*/
 
 
 Parse.Cloud.define('createShopReview', function(req, res) {
@@ -169,6 +168,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 	Parse.Promise.when(queryPromises).then(function(searchResults){
 		outerShop = searchResults[0];
 		outerAuthor = searchResults[1];
+		var installation = searchResults[2];
 		var savePromises = [];
 
 		var ShopReview = Parse.Object.extend("ShopReview");
@@ -187,7 +187,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 			savePromises.push(addShopPromise);
 		}
 
-		var channelPromise = Utility.updateChannelInInstallation(searchResults[2], outerShop.id);
+		var channelPromise = Utility.updateChannelInInstallation(installation, outerShop.id);
 		if (channelPromise != null) {
 			savePromises.push(channelPromise);
 		}
