@@ -118,7 +118,7 @@ Parse.Cloud.define('addShopToFavorite', function(req, res) {
 		savePromises.push(favorite.save());
 
 		// update the watching shop array for this user
-		var userPromise = Utility.addShopToUserWatchingListIfNecessary(user, shop);
+		var userPromise = Utility.addShopToUserWatchingList(user, shop);
 		if (userPromise != null) {
 			savePromises.push(userPromise);
 		}
@@ -182,7 +182,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		}
 		savePromises.push(newReview.save());
 
-		var addShopPromise = Utility.addShopToUserWatchingListIfNecessary(outerAuthor, outerShop);
+		var addShopPromise = Utility.addShopToUserWatchingList(outerAuthor, outerShop);
 		if (addShopPromise != null) {
 			savePromises.push(addShopPromise);
 		}
@@ -229,7 +229,8 @@ class Utility {
 		}
 	}
 
-	static addShopToUserWatchingListIfNecessary(user, shop){
+	static addShopToUserWatchingList(user, shop){
+	/*
 		var shopIDsWatching = user.get("shopIDsWatching");
 		if (shopIDsWatching == null) {
 			shopIDsWatching = [];
@@ -241,5 +242,6 @@ class Utility {
 		} else {
 			reuturn null;
 		}
+	*/
 	}
 }
