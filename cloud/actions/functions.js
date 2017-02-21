@@ -229,7 +229,6 @@ class Utility {
 		}
 	}
 
-/*
 	static addShopToUserWatchingListIfNecessary(user, shop){
 		var shopIDsWatching = user.get("shopIDsWatching");
 		if (shopIDsWatching == null) {
@@ -243,5 +242,4 @@ class Utility {
 			reuturn null;
 		}
 	}
-	*/
 }
