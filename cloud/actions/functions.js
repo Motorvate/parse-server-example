@@ -88,7 +88,7 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	});
 });
 
-
+/*
 Parse.Cloud.define('addShopToFavorite', function(req, res) {
 	var queryPromises = [];
 
@@ -138,6 +138,7 @@ Parse.Cloud.define('addShopToFavorite', function(req, res) {
 		res.error(saveError);
 	});
 });
+*/
 
 
 Parse.Cloud.define('createShopReview', function(req, res) {
@@ -168,12 +169,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 	Parse.Promise.when(queryPromises).then(function(searchResults){
 		outerShop = searchResults[0];
 		outerAuthor = searchResults[1];
-
 		var savePromises = [];
-		var channelPromise = Utility.updateChannelInInstallation(searchResults[2], outerShop.id);
-		if (channelPromise != null) {
-			savePromises.push(channelPromise);
-		}
 
 		var ShopReview = Parse.Object.extend("ShopReview");
 		var newReview = new ShopReview();
@@ -186,17 +182,21 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		}
 		savePromises.push(newReview.save());
 
+		var addShopPromise = Utility.addShopToUserWatchingListIfNecessary(outerAuthor, outerShop);
+		if (addShopPromise != null) {
+			savePromises.push(addShopPromise);
+		}
+
+		var channelPromise = Utility.updateChannelInInstallation(searchResults[2], outerShop.id);
+		if (channelPromise != null) {
+			savePromises.push(channelPromise);
+		}
+
 		return Parse.Promise.when(savePromises);
 	}, function(queryError){
 		res.error(queryError);
 	}).then(function(saveResults){
-		outerReview = saveResults[1];
-		var promises = [];
-
-		var addShopPromise = Utility.addShopToUserWatchingListIfNecessary(outerAuthor, outerShop);
-		if (addShopPromise != null) {
-			promises.push(addShopPromise);
-		}
+		outerReview = saveResults[0];
 
 		var notificationMessage = "A new review of your favorite shop: " + outerShop.get("name")
 		return Parse.Push.send({
