@@ -86,6 +86,56 @@ Parse.Cloud.define('createEventComment', function(req, res) {
 	});
 });
 
+Parse.Cloud.define('addShopToFavorite', function(req, res) {
+	var queryPromises = [];
+
+	var shopQuery = new Parse.Query("Shop");
+	var shopPromise = shopQuery.get(req.params.shopID);
+	queryPromises.push(shopPromise);
+
+	var userQuery = new Parse.Query("User");
+	var userPromise = userQuery.get(req.params.userID);
+	queryPromises.push(userPromise);
+
+	var installationQuery = new Parse.Query("_Installation");
+	var installationPromise = installationQuery.get(req.params.installationID, { useMasterKey: true });
+	queryPromises.push(installationPromise);
+
+	Parse.Promise.when(queryPromises).then(function(searchResults){
+		var shop = searchResults[0];
+		var user = searchResults[1];
+		var installation = searchResults[2];
+		var savePromises = [];
+
+		// create new shop favorite object
+		var ShopFavorite = Parse.Object.extend("ShopFavorite");
+		var favorite = new ShopFavorite();
+		favorite.set("shop", shop);
+		favorite.set("user", user);
+		savePromises.push(favorite.save());
+
+		// update the watching shop array for this user
+		var userPromise = Utility.addShopToUserWatchingListIfNecessary(user, shop);
+		if (userPromise != null) {
+			savePromises.push(userPromise);
+		}
+
+		// update installation channels for this user to get notifications from this shop
+		var channelPromise = Utility.updateChannelInInstallation(installation, shop.id);
+		if (channelPromise != null) {
+			savePromises.push(channelPromise);
+		}
+
+		return Parse.Promise.when(savePromises);
+	}, function(searchError){
+		res.error(searchError);
+	}).then(function(saveResults){
+		res.success(saveResults[0]);
+	}, function(saveError){
+		res.error(saveError);
+	});
+});
+
 Parse.Cloud.define('createShopReview', function(req, res) {
 	var queryPromises = [];
 
@@ -139,14 +189,9 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		outerReview = saveResults[1];
 		var promises = [];
 
-		var shopIDsWatching = outerAuthor.get("shopIDsWatching");
-		if (shopIDsWatching == null) {
-			shopIDsWatching = [];
-		}
-		if (shopIDsWatching.indexOf(outerShop.id) == -1) {
-			shopIDsWatching.push(outerShop.id);
-			outerAuthor.set("shopIDsWatching", shopIDsWatching);
-			promises.push(outerAuthor.save(null, { useMasterKey: true }));
+		var addShopPromise = Utility.addShopToUserWatchingListIfNecessary(outerAuthor, outerShop);
+		if (addShopPromise != null) {
+			promises.push(addShopPromise);
 		}
 
 		var notificationMessage = "A new review of your favorite shop: " + outerShop.get("name")
@@ -176,6 +221,20 @@ class Utility {
 			return installation.save(null, { useMasterKey: true });
 		} else {
 			return null;
+		}
+	}
+
+	static addShopToUserWatchingListIfNecessary(user, shop) {
+		var shopIDsWatching = user.get("shopIDsWatching");
+		if (shopIDsWatching == null) {
+			shopIDsWatching = [];
+		}
+		if (shopIDsWatching.indexOf(shop.id) == -1) {
+			shopIDsWatching.push(shop.id);
+			user.set("shopIDsWatching", shopIDsWatching);
+			return user.save(null, { useMasterKey: true }));
+		} else {
+			reuturn null;
 		}
 	}
 }
