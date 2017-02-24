@@ -254,9 +254,24 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 	}, function(saveError){
 		res.error(saveError);
 	}).then(function(){
-		res.success(outerReview);
+		var reviewQuery = new Parse.Query("ShopReview");
+		reviewQuery.equalTo("shop", outerShop);
+		return reviewQuery.find();
 	}, function(pushError){
 		res.error(pushError);
+	}).then(function(queryResults){
+		var totalScore = 0.0;
+		for (var i = 0; i < queryResults.length; i++) {
+			totalScore = totalScore + queryResults[0].get("reviewScore");
+		}
+		outerShop.set("reviewScore", totalScore / queryResults.length);
+		return outerShop.save();
+	}, function(reviewQueryError){
+		res.error(reviewQueryError);
+	}).then(function(savedShop){
+		res.success(outerReview);
+	}, function(shopSaveError){
+		res.error(shopSaveError);
 	});
 });
 
