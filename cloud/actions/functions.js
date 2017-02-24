@@ -5,6 +5,53 @@ Parse.Cloud.define('hello', function(req, res) {
 
 
 Parse.Cloud.define('rsvpEvent', function(req, res) {
+	var queryPromises = [];
+
+	var eventQuery = new Parse.Query("Event");
+	var eventPromise = eventQuery.get(req.params.eventID);
+	queryPromises.push(eventPromise);
+
+	var userQuery = new Parse.Query("User");
+	var userPromise = userQuery.get(req.params.userID);
+	queryPromises.push(userPromise);
+
+	var installationQuery = new Parse.Query("_Installation");
+	var installationPromise = installationQuery.get(req.params.installationID, { useMasterKey: true });
+	queryPromises.push(installationPromise);
+
+	Parse.Promise.when(queryPromises).then(function(queryResults){
+		var event = queryResults[0];
+		var user = queryResults[1];
+		var installation = queryResults[2];
+		var savePromises = [];
+
+		// create new attendance
+		var EventAttendance = Parse.Object.extend("EventAttendance");
+		var newEventAttendance = new EventAttendance();
+		newEventAttendance.set("event", event);
+		newEventAttendance.set("attendee", user);
+		savePromises.push(newEventAttendance.save());
+
+		// update user's watching list
+		var userPromise = Utility.addEventToUserWatchingList(user, event);
+		if (userPromise != null) {
+			savePromises.push(userPromise);
+		}
+
+		// add event to installation channels if needed
+		var channelPromise = Utility.updateChannelInInstallation(installation, event.id);
+		if (channelPromise != null) {
+			savePromises.push(channelPromise);
+		}
+
+		return Parse.Promise.when(savePromises);
+	}, function(queryError){
+		res.error(queryError);
+	}).then(function(savedObjects){
+		res.success(savedObjects[0]);
+	}, function(saveError){
+		res.error(saveError);
+	});
 });
 
 
@@ -224,6 +271,20 @@ class Utility {
 			channels.push(channel);
 			installation.set("channels", channels);
 			return installation.save(null, { useMasterKey: true });
+		} else {
+			return null;
+		}
+	}
+
+	static addEventToUserWatchingList(user, event) {
+		var eventIDsWatching = user.get("eventIDsWatching");
+		if (eventIDsWatching == null) {
+			eventIDsWatching = [];
+		}
+		if (eventIDsWatching.indexOf(event.id) == -1) {
+			eventIDsWatching.push(event.id);
+			user.set("eventIDsWatching", eventIDsWatching);
+			return user.save(null, { useMasterKey: true });
 		} else {
 			return null;
 		}
