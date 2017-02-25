@@ -255,7 +255,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		res.error(saveError);
 	}).then(function(){
 		var reviewQuery = new Parse.Query("ShopReview");
-		reviewQuery.equalTo("shop", outerShop);
+		reviewQuery.equalTo("shop.objectId", outerShop.id);
 		return reviewQuery.find();
 	}, function(pushError){
 		res.error(pushError);
@@ -267,7 +267,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		outerShop.set("reviewScore", totalScore / queryResults.length);
 		return outerShop.save();
 	}, function(reviewQueryError){
-		res.error({reviewQueryError: "error!!!"});//reviewQueryError
+		res.error({ errorField: "error" });//reviewQueryError
 	}).then(function(savedShop){
 		res.success(outerReview);
 	}, function(shopSaveError){
