@@ -254,6 +254,9 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 	}, function(saveError){
 		res.error(saveError);
 	}).then(function(){
+		res.success(outerReview);
+		return;
+
 		var reviewQuery = new Parse.Query("ShopReview");
 		reviewQuery.equalTo("shop.objectId", outerShop.id);
 		return reviewQuery.find();
