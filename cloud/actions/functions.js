@@ -256,7 +256,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 	}).then(function(){
 		var shopPointer = {
 			__type: 'Pointer',
-		  	className: 'Shop',
+		  	className: '_Shop',
 		  	objectId: outerShop.id
 		};
 		var reviewQuery = new Parse.Query("ShopReview");
