@@ -258,7 +258,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 			__type: 'Pointer',
 		  	className: 'Shop',
 		  	objectId: outerShop.id
-		}
+		};
 		var reviewQuery = new Parse.Query("ShopReview");
 		reviewQuery.equalTo("shop", shopPointer);
 		return reviewQuery.find();
@@ -266,7 +266,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		res.error(pushError);
 	}).then(function(reviewQueryResult){
 		outerShop.set("reviewScore", outerReview.get("reviewScore"));
-		return outerShop.save());
+		return outerShop.save();
 	}, function(reviewQueryError){
 		res.error(reviewQueryError);
 	}).then(function(savedShop){
