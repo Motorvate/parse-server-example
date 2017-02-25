@@ -239,6 +239,14 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 			savePromises.push(channelPromise);
 		}
 
+
+		var reviewQuery = new Parse.Query("ShopReview");
+		reviewQuery.equalTo("shop", outerShop);
+		savePromises.push(reviewQuery.find());
+
+
+
+
 		return Parse.Promise.when(savePromises);
 	}, function(queryError){
 		res.error(queryError);
