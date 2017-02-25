@@ -259,15 +259,11 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		var reviewQuery = new Parse.Query("ShopReview");
 		reviewQuery.equalTo("shop", outerShop);
 		reviewQuery.include("shop");
-
 		return reviewQuery.find();
 	}, function(pushError){
 		res.success({error3: pushError});
 		//res.error(pushError);
 	}).then(function(reviewQueryResult){
-		res.success({error3: outerShop.isValid()});
-		return;
-
 		outerShop.set("reviewScore", 3);
 		return outerShop.save();
 	}, function(reviewQueryError){
