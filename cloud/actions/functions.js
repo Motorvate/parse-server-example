@@ -241,7 +241,8 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 
 		return Parse.Promise.when(promises);
 	}, function(queryError){
-		res.error(queryError);
+		res.success({error1: queryError});
+		//res.error(queryError);
 	}).then(function(results){
 		outerReview = results[0];
 
@@ -252,28 +253,28 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 			}, { useMasterKey: true }
 		);
 	}, function(saveError){
-		res.error(saveError);
+		res.success({error2: saveError});	
+		//res.error(saveError);
 	}).then(function(){
-		var shopPointer = {
-			__type: 'Pointer',
-		  	className: '_Shop',
-		  	objectId: outerShop.id
-		};
 		var reviewQuery = new Parse.Query("ShopReview");
 		//reviewQuery.equalTo("shop", shopPointer);
 		reviewQuery.include("shop");
+
 		return reviewQuery.find();
 	}, function(pushError){
-		res.error(pushError);
+		res.success({error3: pushError});
+		//res.error(pushError);
 	}).then(function(reviewQueryResult){
 		outerShop.set("reviewScore", outerReview.get("reviewScore"));
 		return outerShop.save();
 	}, function(reviewQueryError){
-		res.error(reviewQueryError);
+		res.success({error4: reviewQueryError});	
+		//res.error(reviewQueryError);
 	}).then(function(savedShop){
 		res.success(outerReview);
 	}, function(shopSaveError){
-		res.error(shopSaveError);
+		res.success({error5: shopSaveError});
+		//res.error(shopSaveError);
 	});
 });
 
