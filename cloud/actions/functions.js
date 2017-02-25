@@ -260,7 +260,12 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 	}, function(pushError){
 		res.error(pushError);
 	}).then(function(reviewQueryResult){
-		outerShop.set("reviewScore", 3);
+		var totalScore = 0.0;
+		for (var i=0; i<reviewQueryResult.length; i++) {
+			var review = reviewQueryResult[i];
+			totalScore = totalScore + review.get("reviewScore");
+		}
+		outerShop.set("reviewScore", totalScore / reviewQueryResult.length);
 		return outerShop.save();
 	}, function(reviewQueryError){
 		res.error(reviewQueryError);
