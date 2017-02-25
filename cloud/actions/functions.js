@@ -253,7 +253,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 			}, { useMasterKey: true }
 		);
 	}, function(saveError){
-		res.success({error2: saveError});	
+		res.success({error2: saveError});
 		//res.error(saveError);
 	}).then(function(){
 		var reviewQuery = new Parse.Query("ShopReview");
@@ -265,7 +265,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		res.success({error3: pushError});
 		//res.error(pushError);
 	}).then(function(reviewQueryResult){
-		res.success(outerShop);
+		res.success(reviewQueryResult);
 		return;
 
 		outerShop.set("reviewScore", 3);
