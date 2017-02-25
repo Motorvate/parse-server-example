@@ -216,7 +216,7 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		outerShop = searchResults[0];
 		outerAuthor = searchResults[1];
 		var installation = searchResults[2];
-		var savePromises = [];
+		var promises = [];
 
 		var ShopReview = Parse.Object.extend("ShopReview");
 		var newReview = new ShopReview();
@@ -227,38 +227,43 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		if (parentReviewID != null) {
 			newReview.set("parentReview", searchResults[3]);
 		}
-		savePromises.push(newReview.save());
+		promises.push(newReview.save());
 
 		var addShopPromise = Utility.addShopToUserWatchingList(outerAuthor, outerShop);
 		if (addShopPromise != null) {
-			savePromises.push(addShopPromise);
+			promises.push(addShopPromise);
 		}
 
 		var channelPromise = Utility.updateChannelInInstallation(installation, outerShop.id);
 		if (channelPromise != null) {
-			savePromises.push(channelPromise);
+			promises.push(channelPromise);
 		}
-
 
 		var reviewQuery = new Parse.Query("ShopReview");
 		reviewQuery.equalTo("shop", outerShop);
-		savePromises.push(reviewQuery.find());
+		promises.push(reviewQuery.find());
 
-
-
-
-		return Parse.Promise.when(savePromises);
+		return Parse.Promise.when(promises);
 	}, function(queryError){
 		res.error(queryError);
-	}).then(function(saveResults){
-		outerReview = saveResults[0];
+	}).then(function(results){
+		outerReview = results[0];
+		var morePromises = [];
+		var existingReviews = results[results.length - 1];
+		if (existingReviews.length > 0) {
+		} else {
+			outerShop.set("reviewScore", outerReview.get("reviewScore"));
+		}
+		morePromises.push(outerShop.save());
 
 		var notificationMessage = "A new review of your favorite shop: " + outerShop.get("name")
-		return Parse.Push.send({
-						channels: [outerShop.id],
-						data: { alert: notificationMessage }
-					}, { useMasterKey: true }
+		var pushPromise = Parse.Push.send({
+				channels: [outerShop.id],
+				data: { alert: notificationMessage }
+			}, { useMasterKey: true }
 		);
+		morePromises.push(pushPromise);
+		return Parse.Promise.when(morePromises);
 	}, function(saveError){
 		res.error(saveError);
 	}).then(function(){
