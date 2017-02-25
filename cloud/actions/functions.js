@@ -239,6 +239,21 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 			promises.push(channelPromise);
 		}
 
+		return Parse.Promise.when(promises);
+	}, function(queryError){
+		res.error(queryError);
+	}).then(function(results){
+		outerReview = results[0];
+
+		var notificationMessage = "A new review of your favorite shop: " + outerShop.get("name")
+		return Parse.Push.send({
+				channels: [outerShop.id],
+				data: { alert: notificationMessage }
+			}, { useMasterKey: true }
+		);
+	}, function(saveError){
+		res.error(saveError);
+	}).then(function(){
 		var shopPointer = {
 			__type: 'Pointer',
 		  	className: 'Shop',
@@ -246,35 +261,18 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		}
 		var reviewQuery = new Parse.Query("ShopReview");
 		reviewQuery.equalTo("shop", shopPointer);
-		promises.push(reviewQuery.find());
-
-		return Parse.Promise.when(promises);
-	}, function(queryError){
-		res.error(queryError);
-	}).then(function(results){
-		outerReview = results[0];
-		var morePromises = [];
-		var existingReviews = results[results.length - 1];
-		if (existingReviews.length > 0) {
-		} else {
-			outerShop.set("reviewScore", outerReview.get("reviewScore"));
-		}
-		morePromises.push(outerShop.save());
-
-		var notificationMessage = "A new review of your favorite shop: " + outerShop.get("name")
-		var pushPromise = Parse.Push.send({
-				channels: [outerShop.id],
-				data: { alert: notificationMessage }
-			}, { useMasterKey: true }
-		);
-		morePromises.push(pushPromise);
-		return Parse.Promise.when(morePromises);
-	}, function(saveError){
-		res.error(saveError);
-	}).then(function(){
-		res.success(outerReview);
+		return reviewQuery.find();
 	}, function(pushError){
 		res.error(pushError);
+	}).then(function(reviewQueryResult){
+		outerShop.set("reviewScore", outerReview.get("reviewScore"));
+		return outerShop.save());
+	}, function(reviewQueryError){
+		res.error(reviewQueryError);
+	}).then(function(savedShop){
+		res.success(outerReview);
+	}, function(shopSaveError){
+		res.error(shopSaveError);
 	});
 });
 
