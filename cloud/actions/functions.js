@@ -265,8 +265,9 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 		res.success({error3: pushError});
 		//res.error(pushError);
 	}).then(function(reviewQueryResult){
-		outerShop.set("reviewScore", outerReview.get("reviewScore"));
-		return outerShop.save();
+		var returnedShop = reviewQueryResult[0].get("shop");
+		returnedShop.set("reviewScore", outerReview.get("reviewScore"));
+		return returnedShop.save();
 	}, function(reviewQueryError){
 		res.success({error4: reviewQueryError});	
 		//res.error(reviewQueryError);
