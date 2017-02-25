@@ -239,8 +239,13 @@ Parse.Cloud.define('createShopReview', function(req, res) {
 			promises.push(channelPromise);
 		}
 
+		var shopPointer = {
+			__type: 'Pointer',
+		  	className: 'Shop',
+		  	objectId: outerShop.id
+		}
 		var reviewQuery = new Parse.Query("ShopReview");
-		reviewQuery.equalTo("shop", outerShop);
+		reviewQuery.equalTo("shop", shopPointer);
 		promises.push(reviewQuery.find());
 
 		return Parse.Promise.when(promises);
