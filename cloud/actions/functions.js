@@ -3,6 +3,30 @@ Parse.Cloud.define('hello', function(req, res) {
   res.success('Hi');
 });
 
+Parse.Cloud.define('addNewUserVehicle', function(req, res) {
+	var queryPromises = [];
+
+	var userQuery = new Parse.Query("User");
+	queryPromises.push(userQuery.get(req.params.ownerID));
+
+	var vehicleModelQuery = new Parse.Query("VehicleModel");
+	vehicleModelQuery.equalTo("manufacture", req.params.manufacture);
+	vehicleModelQuery.equalTo("model", req.params.model);
+	vehicleModelQuery.equalTo("year", req.params.year);
+	queryPromises.push(vehicleModelQuery.count());
+
+	Parse.Promise.when(queryPromises).then(function(queryResults){
+		var owner = queryResults[0];
+		var isNewModel = queryResults[1] > 0;
+
+		if (isNewModel) {
+		} else {
+		}
+	},function(queryError){
+		res.error(queryError);
+	});
+});
+
 
 Parse.Cloud.define('rsvpEvent', function(req, res) {
 	var queryPromises = [];
