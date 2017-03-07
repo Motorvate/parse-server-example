@@ -28,9 +28,9 @@ Parse.Cloud.job("updateDatabaseWithEdmunds", function(request, status) {
 	}, function(deleteError){
 		status.error("delete error: " + deleteError);
 	}).then(function(httpResponse) {
-		console.log("everything works!");
-	}, function(httpResponse) {
-		console.error('Request failed with response code ' + httpResponse.status);
+		status.success("everything works!");
+	}, function(httpError) {
+		status.error("HTTP request failed with error " + httpError);
 	});
 
 /*
