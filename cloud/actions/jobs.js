@@ -68,29 +68,8 @@ Parse.Cloud.job("updateDatabaseWithEdmunds", function(request, status) {
 	}, function(httpError) {
 		status.error("HTTP request failed with error " + httpError);
 	}).then(function(saveResult){
-		status.success("everything works!");
+		status.success("Database updated with Edmunds data");
 	}, function(saveError){
 		status.error("Save failed with error " + httpError);
 	});
-
-/*
-	// the params passed through the start request
-	var params = request.params;
-	// Headers from the request that triggered the job
-	var headers = request.headers;
-
-	// get the parse-server logger
-	var log = request.log;
-
-	// Update the Job status message
-	status.message("I just started");
-	doSomethingVeryLong().then(function(result) {
-		// Mark the job as successful
-		// success and error only support string as parameters
-		status.success("I just finished");
-	}, function(error) {
-    	// Mark the job as errored
-		status.error("There was an error");
-	});
-	*/
 });
