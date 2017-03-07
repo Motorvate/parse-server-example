@@ -28,9 +28,37 @@ Parse.Cloud.job("updateDatabaseWithEdmunds", function(request, status) {
 	}, function(deleteError){
 		status.error("delete error: " + deleteError);
 	}).then(function(httpResponse) {
-		status.success("everything works!");
+		var savePromises = [];
+		var makeArray = httpResponse.data.makes;
+		for (var i=0; i<makeArray.length; i++) {
+			var make = makeArray[i];
+
+			var VehicleManufacture = Parse.Object.extend("VehicleManufacture");
+			var newMake = new VehicleManufacture();
+			newMake.set("manufactureName", make.name);
+			newMake.set("niceManufactureName", make.niceName);
+			newMake.set("edmundsID", make.id);
+			savePromises.push(newMake.save());
+
+			var modelsArray = make.models;
+			for (var j=0; j<modelsArray.length; j++) {
+				var	model = modelsArray[j];
+				var Vehicle = Parse.Object.extend("Vehicle");
+				var newVehicle = new Vehicle();
+				newVehicle.set("manufacture", newMake);
+				newVehicle.set("modelName", model.name);
+				newVehicle.set("niceModelName", model.niceName);
+				newVehicle.set("edmundsID", model.id);
+				savePromises.push(newVehicle.save());
+			}
+		}
+		return Parse.Promise.when(savePromises);
 	}, function(httpError) {
 		status.error("HTTP request failed with error " + httpError);
+	}).then(function(saveResult){
+		status.success("everything works!");
+	}, function(saveError){
+		status.error("Save failed with error " + httpError);
 	});
 
 /*
