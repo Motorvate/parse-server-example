@@ -49,6 +49,18 @@ Parse.Cloud.job("updateDatabaseWithEdmunds", function(request, status) {
 				newVehicle.set("modelName", model.name);
 				newVehicle.set("niceModelName", model.niceName);
 				newVehicle.set("edmundsID", model.id);
+
+				var yearArray = model.years;
+				var yearNumArray = [];
+				var yearIDArray = [];
+				for (var k=0; k<yearArray.length; k++) {
+					var yearModel = yearArray[k];
+					yearNumArray.push(yearModel.year);
+					yearIDArray.push(yearModel.id);
+				}
+				newVehicle.set("yearArray", yearNumArray);
+				newVehicle.set("edmundsYearIDArray", yearIDArray);
+
 				savePromises.push(newVehicle.save());
 			}
 		}
