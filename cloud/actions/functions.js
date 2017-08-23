@@ -3,6 +3,194 @@ Parse.Cloud.define('hello', function(req, res) {
   res.success('Hi');
 });
 
+Parse.Cloud.define('addNewShop', function(req, res) {
+  var queryPromises = [];
+
+  var getUserById = (new Parse.Query('User')).get;
+  queryPromises.push(getUserById(req.params.userID));
+
+  Parse.Promise.when(queryPromises).then(function(queryResults) {
+    var owner = queryResults[0];
+    var savePromises = [];
+
+    // create new shop
+    var Shop = Parse.Object.extend('Shop');
+    var newShop = new Shop();
+    newShop.set('owner', owner);
+    newShop.set('name', req.params.name);
+    newShop.set('phoneNumber', req.params.phoneNumber);
+
+    savePromises.push(newShop.save());
+
+    return Parse.Promise.when(savePromises);
+  }, function(queryError) {
+  }).then(function(savedObjects) {
+    res.success(savedObjects[0]);
+  }, function(saveError) {
+    res.error(saveError);
+  });
+});
+
+
+Parse.Cloud.define('updateShopInfo', function(req, res) {
+  var queryPromises = [];
+
+  var getUserById = (new Parse.Query('User')).get;
+  queryPromises.push(getUserById(req.params.userID));
+
+  var getShopById = (new Parse.Query('Shop')).get;
+  queryPromises.push(getShopById(req.params.shopID));
+
+  Parse.Promise.when(queryPromises).then(function(queryResults) {
+    var user = queryResults[0];
+    var shop = queryResults[1];
+    var savePromises = [];
+
+    // only allow owner user to edit a shop
+    if (user.equals(shop.owner)) {
+      var shopFields = [
+        'address',
+        'friOperationTime',
+        'instagramUserId',
+        'monOperationTime',
+        'name',
+        'phoneNumber',
+        'satOperationTime',
+        'shopDescription',
+        'shopImageURLs',
+        'shopMainIMageURL',
+        'sunOperationTime',
+        'thuOperationTime',
+        'tueOperationTime',
+        'wedOperationTime',
+      ];
+
+      var updatedShopFields = shopFields.filter(function(fieldName) {
+        return req.params[fieldName]
+      });
+      updatedShopFields.forEach(function(fieldName) {
+        shop.set(fieldName, req.params[fieldName]);
+      });
+
+      savePromises.push(shop.save());
+    }
+
+    return savePromises;
+  }, function(queryError) {
+  }).then(function(savedObjects) {
+    res.success(savedObjects[0]);
+  }, function(saveError) {
+    res.error(saveError);
+  });
+});
+
+
+Parse.Cloud.define('getRecentShopIGPhotos', function(req, res) {
+  var queryPromises = [];
+
+  var getShopById = (new Parse.Query('Shop')).get;
+  query1Promises.push(getShopById(req.params.shopID));
+
+
+  Parse.Promise.when(query1Promises).then(function(query1Results) {
+    query2Promises = [];
+
+    // tbdefined - instagram.getRecentPhotosForUser function
+    // https://www.instagram.com/developer/endpoints/users/
+    query2Promises.push(instagram.getRecentPhotosForUser(shop.instagramUserId))
+
+    Parse.Promise.when(query2Promises).then(function(query2Results) {
+      var igResponse = query2Results[0];
+      res.succeed(igResponse);
+      /** {
+       *    "data": [
+       *      {
+       *        "comments"...,
+       *        "caption"...,
+       *        "likes"...,
+       *        "link": "http://instagr.am/p/BWrVZ/",
+       *        ...
+       *      },
+       *      {...},
+       *      {...},
+       *      {...},
+       *      ...
+       *    ]
+       */
+    });
+  });
+});
+
+
+Parse.Cloud.define('updateMarketItemInfo', function(req, res) {
+  var queryPromises = [];
+
+  var getUserById = (new Parse.Query('User')).get;
+  queryPromises.push(getUserById(req.params.userID));
+
+  var getMarketItemById = (new Parse.Query('MarketItem')).get;
+  queryPromises.push(getMarketItemById(req.params.marketItemID));
+
+  Parse.Promise.when(queryPromises).then(function(queryResults) {
+    var user = queryResults[0];
+    var marketItem = queryResults[1];
+    var savePromises = [];
+
+    // only allow owner user to edit a marketItem
+    if (user.equals(marketItem.owner)) {
+      var marketItemFields = [
+        'marketItemDescription',
+        'userId',
+      ];
+
+      var updatedMarketItemFields = marketItemFields.filter(function(fieldName) {
+        return req.params[fieldName]
+      });
+      updatedMarketItemFields.forEach(function(fieldName) {
+        marketItem.set(fieldName, req.params[fieldName]);
+      });
+
+      savePromises.push(marketItem.save());
+    }
+
+    return savePromises;
+  }, function(queryError) {
+  }).then(function(savedObjects) {
+    res.success(savedObjects[0]);
+  }, function(saveError) {
+    res.error(saveError);
+  });
+});
+
+
+Parse.Cloud.define('addNewMarketItem', function(req, res) {
+  var queryPromises = [];
+
+  var getUserById = (new Parse.Query('User')).get;
+  queryPromises.push(getUserById(req.params.userID));
+
+  Parse.Promise.when(queryPromises).then(function(queryResults) {
+    var owner = queryResults[0];
+    var savePromises = [];
+
+    // create new marketItem
+    var MarketItem = Parse.Object.extend('MarketItem');
+    var newMarketItem = new MarketItem();
+    newMarketItem.set('ownerID', owner);
+    newMarketItem.set('phoneNumber', req.params.phoneNumber);
+
+    savePromises.push(newMarketItem.save());
+
+    return Parse.Promise.when(savePromises);
+  }, function(queryError) {
+  }).then(function(savedObjects) {
+    res.success(savedObjects[0]);
+  }, function(saveError) {
+    res.error(saveError);
+  });
+});
+
+
 Parse.Cloud.define('addNewUserVehicle', function(req, res) {
 	var queryPromises = [];
 
@@ -20,7 +208,9 @@ Parse.Cloud.define('addNewUserVehicle', function(req, res) {
 		var isNewModel = queryResults[1] > 0;
 
 		if (isNewModel) {
+      // is there code missing here?
 		} else {
+      // is there code missing here?
 		}
 	},function(queryError){
 		res.error(queryError);
